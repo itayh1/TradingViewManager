@@ -1,0 +1,16 @@
+{
+    "manifest_version": 3,
+    "version": "1.0.0",
+    "name": "TVStocksExtension",
+    "action": {
+        "default_popup": "index.html"
+    },
+    "host_permissions": [
+        "https://www.tradingview.com/**"
+    ],
+    "permissions": [
+        "storage",
+        "scripting",
+        "tabs"
+    ]
+}
