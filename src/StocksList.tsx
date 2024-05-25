@@ -4,7 +4,7 @@ import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { TrashIcon } from "lucide-react";
 
-function removeStockExchangeFromTicker(stockName) {
+function removeStockExchangeFromTicker(stockName: string) {
   const index = stockName.indexOf(":");
   if (index !== -1) {
     return stockName.slice(index + 1);
@@ -18,7 +18,7 @@ function StocksList({ currentStocks, onDeleteStock }) {
   return (
     <ScrollArea className="h-72 w-48 rounded-md border">
       <div className="p-4">
-        {currentStocksCleaned.map((stock) => (
+        {currentStocksCleaned.map((stock: string) => (
           <div key={stock}>
             <div className="text-sm flex flex-row justify-between">
               {stock}

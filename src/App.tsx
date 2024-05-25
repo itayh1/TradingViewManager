@@ -6,7 +6,7 @@ import { Label } from "@radix-ui/react-label";
 import StocksList from "./StocksList";
 import currentStocksExample from "./stocksExample";
 
-async function parseTickerFile(filename) {
+async function parseTickerFile(filename: string) {
   const resp = await fetch(`/${filename}`);
   if (!resp.ok) {
     throw new Error("Could not open file");
@@ -26,7 +26,7 @@ async function getAllTickers() {
     return null;
   }
 }
-async function getCurrentStocks(updateValue) {
+async function getCurrentStocks(updateValue: (stock: string[]) => void) {
   if (!chrome.tabs) {
     updateValue(currentStocksExample);
     return;
@@ -34,9 +34,9 @@ async function getCurrentStocks(updateValue) {
   let [tab] = await chrome.tabs.query({ active: true });
   await chrome.scripting.executeScript(
     {
-      target: { tabId: tab.id },
+      target: { tabId: tab.id! },
       func: () => {
-        const obj = JSON.parse(localStorage.getItem("deleted_symbols_list"))[
+        const obj = JSON.parse(localStorage.getItem("deleted_symbols_list")!)[
           "symbols"
         ];
         return obj;
@@ -49,27 +49,32 @@ async function getCurrentStocks(updateValue) {
     }
   );
 }
-async function saveCurrentSymbols(currentSymbolsList) {
+async function saveCurrentSymbols(currentSymbolsList: string[]) {
   if (!chrome.tabs) {
     alert("You're not run as extension");
     return;
   }
   let [tab] = await chrome.tabs.query({ active: true });
   await chrome.scripting.executeScript({
-    target: { tabId: tab.id },
+    target: { tabId: tab.id! },
     func: (stocksList) => {
       console.log(stocksList);
-      obj = JSON.parse(localStorage.getItem("deleted_symbols_list"));
+      let obj = JSON.parse(localStorage.getItem("deleted_symbols_list")!);
       obj["symbols"] = stocksList;
       localStorage.setItem("deleted_symbols_list", JSON.stringify(obj));
     },
     args: [currentSymbolsList],
   });
 }
+interface AllStocks {
+    nyseStocks: string[],
+    nasdaqStocks: string[],
+    amexStocks: string[],
+}
 function App() {
   const [newStock, setNewStock] = useState("");
-  const [currentStocks, setCurrentStocks] = useState(null);
-  const [allStocks, setAllStocks] = useState({
+  const [currentStocks, setCurrentStocks] = useState<string[]>([]);
+  const [allStocks, setAllStocks] = useState<AllStocks>({
     nyseStocks: [],
     nasdaqStocks: [],
     amexStocks: [],
@@ -78,15 +83,15 @@ function App() {
     const asyncFunc = async () => {
       const allTickers = await getAllTickers();
       setAllStocks({
-        amexStocks: allTickers.amexTickers,
-        nasdaqStocks: allTickers.nasdaqTickers,
-        nyseStocks: allTickers.nyseTickers,
+        amexStocks: allTickers?.amexTickers,
+        nasdaqStocks: allTickers?.nasdaqTickers,
+        nyseStocks: allTickers?.nyseTickers,
       });
     };
     asyncFunc();
   }, []);
   const loadCurrentStocks = () => {
-    const updateCurrentStocksCallback = (stocksList) => {
+    const updateCurrentStocksCallback = (stocksList: string[]) => {
       // const cleanedStocksList = stocksList.map(removeStockExchangeFromTicker);
       setCurrentStocks(stocksList);
     };
@@ -118,7 +123,7 @@ function App() {
     saveCurrentSymbols(stocksWithTickers);
     alert('Saved list successfully');
   };
-  const onDeleteStock = (stockToDelete) => {
+  const onDeleteStock = (stockToDelete: string) => {
     setCurrentStocks(prevStockList => prevStockList.filter(stock => {
       const idx = stock.indexOf(":");
       if (idx === -1) {
